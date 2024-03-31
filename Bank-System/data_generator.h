@@ -4,4 +4,5 @@
 #include <stdlib.h>
 #include <time.h>
 
-char* generate_random_iban();
+#define IBAN_LENGTH 24
+void generate_random_iban(char *iban);

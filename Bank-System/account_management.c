@@ -17,12 +17,15 @@ void loggingInto(){
 
 void createAccount(){
 
+    createCSV(); // Creates when the CSV is not found
     clear_screen();
+
     User_Credentials user;
 
+    // Choosing the Coin
     int bool = 1;
-    char option1;
     char currency[4];
+    char option1;
 
     while (bool){
         printf("\n======================================================"); 
@@ -51,10 +54,12 @@ void createAccount(){
         break; 
         }
     }
+
+
     // First Name Field
     bool = 1;
 
-    char *buffer = malloc(sizeof(char)*21);
+    char *buffer = (char*)malloc(sizeof(char)*21);
     int length;
 
     do{
@@ -101,9 +106,9 @@ void createAccount(){
     free(buffer);
     clear_screen();
 
-    // Last Name Field
 
-    buffer = malloc(sizeof(char)*21);
+    // Last Name Field
+    buffer = (char*)malloc(sizeof(char)*21);
 
     bool = 1;
 
@@ -194,8 +199,9 @@ void createAccount(){
     clear_screen();
 
     // Password Field
-    buffer = malloc(sizeof(char)*21);
-    user.link = malloc(sizeof(Personal_Data));
+    buffer = (char*)malloc(sizeof(char)*21);
+
+    user.link = (Card_Data*)malloc(sizeof(Card_Data));
 
     bool = 1;
     
@@ -218,26 +224,37 @@ void createAccount(){
     }while(bool);   
 
     buffer[length] = '\0';
-    strcpy(user.link->password, buffer);
+    strcpy(user.password, buffer);
     free(buffer);
     clear_screen();
 
-    // Personal Data generating
-    strcpy(user.link->account_id, "10000");
-    strcpy(user.link->iban, generate_random_iban());
+
+    // Generate ID
+    strcpy(user.account_id, "10000");
+
+
+    // Card Data Field
+    strcpy(user.link->currency, currency);
+
+    char *iban = (char*)malloc((IBAN_LENGTH+1)*sizeof(char));
+    generate_random_iban(iban);
+    strcpy(user.link->iban, iban);
+    free(iban);
+
     user.link->balance = 0;
 
     write_data(user);
 
     printf("\n======================================================"); 
-    printf("\n\t+ Your account with ID: %s\n\thas been succesfully created!\n\n", user.link->account_id);
+    printf("\n\t+ Your account with ID: %s\n\thas been succesfully created!\n\n", user.account_id);
 
-    printf("\t+ Your current balance: %.2f%s\n", user.link->balance, currency);
+    printf("\t+ Your current balance: %.2f%s\n", user.link->balance, user.link->currency);
     
-    strcpy(user.link->iban, generate_random_iban());
     printf("\n\t+ Your IBAN is: %s\n", user.link->iban);
-    printf("\n\t+ Your password is: %s\n", user.link->password);
+    printf("\n\t+ Your password is: %s\n", user.password);
     printf("======================================================"); 
+    //
+
     char option2;
 
     printf("    \nDo you want to Log in? [y/N]\n");

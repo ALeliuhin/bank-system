@@ -6,16 +6,17 @@
 
 typedef struct{
     char iban[25];
-    char account_id[6];
-    char password[20];
+    char currency[4];
     float balance;
-} Personal_Data;
+} Card_Data;
 
 typedef struct{
-    Personal_Data *link;
+    Card_Data *link;
+    char password[20];
     char name[20];
     char surname[20];
     char telephone_number[20];
+    char account_id[6];
 } User_Credentials;
 
 void clear_screen();
