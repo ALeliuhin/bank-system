@@ -1,7 +1,7 @@
 #include "data_parser.h"
 
 #define CLIENT_FORMAT_CSV "%s,%s,%s,%s,%s,%s,%.2f%s\n"
-#define CSV_HEADER "ID,Name,Surname,Telephone,Password,IBAN,Balance\n\n\n"
+#define CSV_HEADER "ID,Name,Surname,Telephone,Password,IBAN,Balance"
 
 
 void createCSV() {
