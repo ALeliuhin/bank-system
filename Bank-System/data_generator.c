@@ -1,6 +1,6 @@
 #include "data_generator.h"
 
-void generate_random_iban(char* iban) {
+void generate_random_iban(char *iban) {
     sprintf(iban, "RO24");
 
     srand(time(0));

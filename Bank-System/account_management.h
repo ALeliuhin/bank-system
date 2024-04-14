@@ -16,9 +16,9 @@ typedef struct{
     char name[20];
     char surname[20];
     char telephone_number[20];
-    char account_id[6];
 } User_Credentials;
 
+int main();
 void clear_screen();
-void loggingInto();
+void loggingInto(char *bufferTelephone, char *bufferPassword);
 void createAccount();
