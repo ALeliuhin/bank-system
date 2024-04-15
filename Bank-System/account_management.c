@@ -1,24 +1,28 @@
 #include "account_management.h"
 #include "data_generator.h"
 #include "data_parser.h"
+#include "transactions.h"
+#define MAX_LIMIT 100000000
 
 void mainMenu(User_Credentials user){
 
-    printf("-----------------------------------\n");
+    printf("--------------------------------------------------\n");
     printf("\t Welcome, %s %s!\n", user.name, user.surname);
-    int bool = 1;
+    int ext_bool = 1;
     do{
-        printf("-----------------------------------\n");
+        printf("--------------------------------------------------\n");
         printf("\n\t===MAIN MENU===\n\n");
 
         int bool1 = 1;
         do{
             char option1;
             printf("Select one of the options:");
-            printf("\n  1. Inspect personal data\n  2. Inspect card data\n  3. Change password\n  4. Change IBAN\n  5. Delete account\n  6. Log out\n");
-            printf("-----------------------------------\n");
+            printf("\n  1. Inspect personal data\n  2. Inspect card data\n  3. Withdraw cash\n  4. Top up account\n");
+            printf("  5. Make a transaction\n  6. Change password\n  7. Change IBAN\n  8. Delete account\n  9. Log out\n");
+            printf("--------------------------------------------------\n");
             scanf(" %c", &option1);
             switch(option1){
+
                 case '1':
                     clear_screen();
                     printf("======================================================\n");
@@ -37,6 +41,95 @@ void mainMenu(User_Credentials user){
                     break;
 
                 case '3':
+                    clear_screen();
+                    float amount_to_withdraw;
+                    bool bool_withdraw = true;
+                    bool bool_withdraw_cancel = true;
+                    do{
+                        printf("\n======================================================");
+                        printf("\nInput the amount to withdraw: [0 - cancel]\n\n");
+                        scanf(" %f", &amount_to_withdraw);
+                        if(amount_to_withdraw < 5){
+                            if(amount_to_withdraw == 0){
+                                clear_screen();
+                                bool_withdraw = false;
+                                bool_withdraw_cancel = false;
+                                break;
+                            }
+                            clear_screen;
+                            printf("Minimum 5%s to withdraw.", user.link->currency);
+                            continue;
+                        }
+                        else if(user.link->balance < amount_to_withdraw){
+                            clear_screen();
+                            printf("Insufficient funds. Please enter a valid amount.");
+                            continue;
+                        }
+                        bool_withdraw = false;
+                    }while(bool_withdraw);
+                    if(bool_withdraw_cancel == false){
+                        clear_screen();
+                        break;
+                    }
+                    clear_screen();
+                    withdrawCash(&user, amount_to_withdraw);
+                    printf("--------------------------------------------------\n");
+                    printf("You have succesfully withdrawn cash!\n");
+                    printf("--------------------------------------------------\n");
+                    break;
+
+                case '4':
+                    clear_screen();
+                    float amount_to_top_up;
+                    int bool_top_up = 1;
+                    do{
+                        printf("\n======================================================");
+                        printf("\nInput the amount to top up:\n\n");
+                        scanf(" %f", &amount_to_top_up);
+                        if(amount_to_top_up > user.link->balance + MAX_LIMIT){
+                            clear_screen;
+                            printf("Maximum limit to top up exceeded.");
+                            continue;
+                        }
+                        bool_top_up = 0;
+                    }while(bool_top_up);
+                    clear_screen();
+                    topUpAccount(&user, amount_to_top_up);
+                    printf("-----------------------------------\n");
+                    printf("You have succesfully appended account!\n");
+                    printf("-----------------------------------\n");
+                    break;
+                
+                case '5':
+                    clear_screen();
+                    bool bool_transfer = true;
+                    char iban_destination[IBAN_LENGTH + 1];
+                    float amount_to_transfer;
+                    do{
+                        printf("\n======================================================");
+                        printf("\nInput the destination IBAN:\n");
+                        scanf("\n");
+                        fgets(iban_destination, IBAN_LENGTH + 1, stdin);
+                        if(validationData(iban_destination) == 1){
+                            clear_screen();
+                            printf("Input amount to transfer: (min: 5%s)\n", user.link->currency);
+                            scanf(" %f", &amount_to_transfer);
+                            transferMoney(&user, iban_destination, amount_to_transfer);
+                            bool_transfer = false;
+                        }
+                        else{
+                            clear_screen();
+                            printf("No matching IBAN in the database.");
+                            continue;
+                        }
+                    }while(bool_transfer);
+                    clear_screen();
+                    printf("-----------------------------------\n");
+                    printf("You have succesfully transfered money!\n");
+                    printf("-----------------------------------\n");
+                    break;
+
+                case '6':
                     clear_screen();
                     char *new_password = malloc(sizeof(char)*21);
                     int bool_password = 1;
@@ -67,9 +160,12 @@ void mainMenu(User_Credentials user){
                     printf("-----------------------------------\n");
                     break;
 
-                case '4':
+                case '7':
                     char *new_iban = malloc(sizeof(char)*(IBAN_LENGTH + 1));
-                    generate_random_iban(new_iban);
+                    do{
+                        generate_random_iban(new_iban);
+                    }while(validationData(new_iban));
+
                     modifyData(&user, new_iban);
                     free(new_iban);
                     clear_screen();
@@ -78,7 +174,7 @@ void mainMenu(User_Credentials user){
                     printf("-----------------------------------\n");
                     break;
 
-                case '5':
+                case '8':
                     clear_screen();
                     char delete_option;
                     printf("Are you sure? [y/N]\n");
@@ -92,12 +188,14 @@ void mainMenu(User_Credentials user){
                         printf("\n\t===MAIN MENU===\n\n");
                         break;
                     }
-                case '6':
-                    bool = 0;
+
+                case '9':
+                    ext_bool = 0;
                     bool1 = 0;
                     clear_screen();
                     main();
                     break;
+
                 default:
                     clear_screen();
                     bool1 = 0;
@@ -106,13 +204,13 @@ void mainMenu(User_Credentials user){
 
         }while(bool1);
 
-    }while(bool);
+    }while(ext_bool);
 }
 
 void loggingInto(char *bufferTelephone, char *bufferPassword){
 
     int length;
-    int bool = 1;
+    int ext_bool = 1;
 
     free(bufferTelephone);
     free(bufferPassword);
@@ -145,16 +243,16 @@ void loggingInto(char *bufferTelephone, char *bufferPassword){
             }
         }
         if(count_non_digits == 0){
-            bool = 0;
+            ext_bool = 0;
         }
         else{
             clear_screen();
             printf("Telephone number contains only digits.\n");
         }
-    }while(bool);
+    }while(ext_bool);
 
     clear_screen();
-    bool = 1;
+    ext_bool = 1;
 
     do{
         printf("\n======================================================"); 
@@ -171,8 +269,8 @@ void loggingInto(char *bufferTelephone, char *bufferPassword){
             printf("Your password is too long.\n");
             continue;
         }
-        bool = 0;
-    }while(bool);
+        ext_bool = 0;
+    }while(ext_bool);
 
     clear_screen();
 
@@ -189,11 +287,11 @@ void createAccount(){
     User_Credentials user;
 
     // Choosing the Coin
-    int bool = 1;
+    int ext_bool = 1;
     char currency[4];
     char option1;
 
-    while (bool){
+    while (ext_bool){
         printf("\n======================================================"); 
         printf("\nChoose the currency for your account:\n\n  1. RON\n  2. USD\n  3. EUR\n\n");
         scanf(" %c", &option1); 
@@ -202,17 +300,17 @@ void createAccount(){
             case '1':
                 strcpy(currency, "RON");
                 clear_screen();
-                bool = 0;
+                ext_bool = 0;
                 break;
             case '2':
                 strcpy(currency, "USD");
                 clear_screen();
-                bool = 0;
+                ext_bool = 0;
                 break;
             case '3':
                 strcpy(currency, "EUR");
                 clear_screen();
-                bool = 0;
+                ext_bool = 0;
                 break;
             default:
                 clear_screen();
@@ -223,7 +321,7 @@ void createAccount(){
 
 
     // First Name Field
-    bool = 1;
+    ext_bool = 1;
 
     char *buffer = (char*)malloc(sizeof(char)*21);
     int length;
@@ -253,14 +351,14 @@ void createAccount(){
         }
 
         if(count_non_letters == 0){
-            bool = 0;
+            ext_bool = 0;
         }
         else{
             clear_screen();
             printf("Name should include only letters.\n");
         }
         
-    }while(bool);
+    }while(ext_bool);
 
     buffer[length] = '\0';
     buffer[0] = toupper(buffer[0]);
@@ -276,7 +374,7 @@ void createAccount(){
     // Last Name Field
     buffer = (char*)malloc(sizeof(char)*21);
 
-    bool = 1;
+    ext_bool = 1;
 
     do{
         printf("\n======================================================"); 
@@ -303,14 +401,14 @@ void createAccount(){
         }
 
         if(count_non_letters == 0){
-            bool = 0;
+            ext_bool = 0;
         }
         else{
             clear_screen();
             printf("Last name should include only letters.\n");
         }
         
-    }while(bool);
+    }while(ext_bool);
 
     buffer[length] = '\0';
     buffer[0] = toupper(buffer[0]);
@@ -325,7 +423,7 @@ void createAccount(){
     //Telephone Number Field
     buffer = malloc(sizeof(char)*21);
     
-    bool = 1;
+    ext_bool = 1;
 
     do{
         printf("\n======================================================"); 
@@ -333,6 +431,11 @@ void createAccount(){
         scanf(" %s", buffer);
 
         length = strlen(buffer);
+        if(validationData(buffer) == 1){
+            clear_screen();
+            printf("This telephone number is already associated with another account.\n");
+            continue;
+        }
         if(length < 7){
             clear_screen();
             printf("Telepehone number should contain no less than 7 digits.\n");
@@ -351,13 +454,13 @@ void createAccount(){
             }
         }
         if(count_non_digits == 0){
-            bool = 0;
+            ext_bool = 0;
         }
         else{
             clear_screen();
             printf("Telephone number should contain only digits.\n");
         }
-    }while(bool);
+    }while(ext_bool);
 
     buffer[length] = '\0';
     strcpy(user.telephone_number, buffer);
@@ -369,7 +472,7 @@ void createAccount(){
 
     user.link = (Card_Data*)malloc(sizeof(Card_Data));
 
-    bool = 1;
+    ext_bool = 1;
     
     do{
         printf("\n======================================================"); 
@@ -386,8 +489,8 @@ void createAccount(){
             printf("Your password is too long.\n");
             continue;
         }
-        bool = 0;
-    }while(bool);   
+        ext_bool = 0;
+    }while(ext_bool);   
 
     buffer[length] = '\0';
     strcpy(user.password, buffer);
@@ -401,7 +504,11 @@ void createAccount(){
     strcpy(user.link->currency, currency);
 
     char *iban = (char*)malloc((IBAN_LENGTH+1)*sizeof(char));
-    generate_random_iban(iban);
+
+    do{
+        generate_random_iban(iban);
+    }while(validationData(iban));
+
     strcpy(user.link->iban, iban);
     free(iban);
 

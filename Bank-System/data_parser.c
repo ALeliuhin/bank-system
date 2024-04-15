@@ -3,7 +3,44 @@
 #define CLIENT_FORMAT_CSV_IN "%s,%s,%s,%s,%s,%f,%s\n"
 #define CLIENT_FORMAT_CSV_OUT "%[^,], %[^,], %[^,], %[^,], %[^,], %f,%[^,\n]\n"
 #define CSV_HEADER "Name,Surname,Telephone,Password,IBAN,Balance,Currency\n"
-#define MAX_SIZE 1024
+
+
+int validationData(const char *data_to_check){
+    User_Credentials user;
+    FILE *file;
+    fopen_s(&file, "customers.csv", "r");
+
+    if (file == NULL) {
+        printf("Error opening the file.\nPlease run the program again.");
+        exit(1);
+    }
+
+    user.link = malloc(sizeof(Card_Data)); 
+    char header[100]; 
+    
+    fgets(header, sizeof(header), file);
+
+    while (fscanf(file, CLIENT_FORMAT_CSV_OUT,
+                                           user.name, 
+                                           user.surname,
+                                           user.telephone_number, 
+                                           user.password, 
+                                           user.link->iban, 
+                                           &user.link->balance,
+                                           user.link->currency) == 7) 
+    {
+        if (strcmp(user.telephone_number, data_to_check) == 0 ||
+            strcmp(user.link->iban, data_to_check) == 0){
+                fclose(file);
+                free(user.link);
+                return 1;
+            }
+    }
+
+    fclose(file);
+    free(user.link);
+    return 0;
+}
 
 void modifyData(User_Credentials *user, char*data_to_modify){
     User_Credentials aux_user;
