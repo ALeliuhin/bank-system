@@ -1,10 +1,6 @@
 #include "data_generator.h"
 
-#define IBAN_LENGTH 24
-
-char* generate_random_iban() {
-    char* iban = (char*)malloc((IBAN_LENGTH + 1) * sizeof(char)); 
-    
+void generate_random_iban(char *iban) {
     sprintf(iban, "RO24");
 
     srand(time(0));
@@ -18,6 +14,4 @@ char* generate_random_iban() {
     }
 
     iban[IBAN_LENGTH] = '\0'; 
-    return iban;
-    free(iban);
 }

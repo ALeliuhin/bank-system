@@ -3,21 +3,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdbool.h>
 
 typedef struct{
     char iban[25];
-    char account_id[6];
-    char password[20];
+    char currency[4];
     float balance;
-} Personal_Data;
+} Card_Data;
 
 typedef struct{
-    Personal_Data *link;
+    Card_Data *link;
+    char password[20];
     char name[20];
     char surname[20];
     char telephone_number[20];
 } User_Credentials;
 
+int main();
 void clear_screen();
-void loggingInto();
+void loggingInto(char *bufferTelephone, char *bufferPassword);
 void createAccount();
