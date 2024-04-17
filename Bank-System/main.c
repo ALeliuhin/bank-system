@@ -56,7 +56,8 @@ int main(int argc, char *argv[]){
     if (validationData(argvTelephone) == 1) {
         clear_screen();
         loggingIntoArgv(argvTelephone, argvPassword);
-    } else {
+    } 
+    else {
         printf("Invalid data provided.\n");
         return 1;
     }

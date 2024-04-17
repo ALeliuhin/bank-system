@@ -349,6 +349,12 @@ void mainMenu(User_Credentials user){
                         printf("\nInput the destination IBAN:\n");
                         scanf("\n");
                         fgets(iban_destination, IBAN_LENGTH + 1, stdin);
+
+                        if(strcmp(selected_iban->iban, iban_destination) == 0){
+                            clear_screen();
+                            printf("Cannot transfer to the same IBAN.\n");
+                            continue;
+                        }
                         if(validationData(iban_destination) == 1){
                             clear_screen();
                             do{
@@ -372,7 +378,7 @@ void mainMenu(User_Credentials user){
                                 }
                                 bool_transfer = false;
                             }while(bool_transfer);
-                            transferMoney(selected_iban, iban_destination, amount_to_transfer);
+                            transferMoney(&user, selected_iban, iban_destination, amount_to_transfer);
                         }
                         else{
                             clear_screen();

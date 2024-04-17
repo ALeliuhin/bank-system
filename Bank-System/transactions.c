@@ -162,7 +162,33 @@ void topUpAccount(User_Credentials *user, Card_Data *selected_iban, char choice_
     return;
 }
 
-void transferMoney(Card_Data *user_source, char *iban_destination, float amount_to_transfer) {
+float convertCurrency(float amount, char from_currency[4], char to_currency[4]) {
+    if (strcmp(from_currency, "RON") == 0 && strcmp(to_currency, "USD") == 0){
+        return amount / 5.0;
+    } 
+    else if (strcmp(from_currency, "USD") == 0 && strcmp(to_currency, "RON") == 0){
+        return amount * 5.0;
+    } 
+    else if (strcmp(from_currency, "RON") == 0 && strcmp(to_currency, "EUR") == 0){
+        return amount / 5.0;
+    } 
+    else if (strcmp(from_currency, "EUR") == 0 && strcmp(to_currency, "RON") == 0){
+        return amount * 5.0;
+    } 
+    else if (strcmp(from_currency, "USD") == 0 && strcmp(to_currency, "EUR") == 0){
+        return amount;
+    } 
+    else if (strcmp(from_currency, "EUR") == 0 && strcmp(to_currency, "USD") == 0){
+        return amount;
+    } 
+    else if (strcmp(from_currency, to_currency) == 0){
+        return amount;
+    }
+}
+
+
+
+void transferMoney(User_Credentials *user, Card_Data *user_source, char *iban_destination, float amount_to_transfer) {
     User_Credentials aux_user;
     FILE *originalFile, *tempFile;
     fopen_s(&originalFile, "customers.csv", "r");
@@ -181,6 +207,8 @@ void transferMoney(Card_Data *user_source, char *iban_destination, float amount_
     char header[300]; 
     fgets(header, sizeof(header), originalFile); 
 
+    int aux_amount = amount_to_transfer;
+
     while (fscanf(originalFile, CLIENT_FORMAT_CSV_OUT,
                                         aux_user.name, 
                                         aux_user.surname,
@@ -197,26 +225,84 @@ void transferMoney(Card_Data *user_source, char *iban_destination, float amount_
                                         &aux_user.iban3->balance,
                                         aux_user.iban3->currency) == 14) 
     {
-        if (strcmp(aux_user.iban1->iban, user_source->iban) == 0) {
-            aux_user.iban1->balance -= amount_to_transfer;
-            user_source->balance -= amount_to_transfer;
-        } 
-        else if (strcmp(aux_user.iban2->iban, user_source->iban) == 0) {
-            aux_user.iban2->balance -= amount_to_transfer;
-            user_source->balance -= amount_to_transfer;
-        } 
-        else if (strcmp(aux_user.iban3->iban, user_source->iban) == 0) {
-            aux_user.iban3->balance -= amount_to_transfer;
-            user_source->balance -= amount_to_transfer;
-        } 
-        else if (strcmp(aux_user.iban1->iban, iban_destination) == 0){
-            aux_user.iban1->balance += amount_to_transfer;
+        amount_to_transfer = aux_amount;
+        if (strcmp(iban_destination, user->iban1->iban) == 0 ||
+            strcmp(iban_destination, user->iban2->iban) == 0 ||
+            strcmp(iban_destination, user->iban3->iban) == 0) {
+        
+            if(strcmp(user_source->iban, aux_user.iban1->iban) == 0){
+                aux_user.iban1->balance -= amount_to_transfer;
+                user_source->balance -= amount_to_transfer;
+                if(strcmp(aux_user.iban2->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban2->currency);
+                    aux_user.iban2->balance += amount_to_transfer;
+                    user->iban2->balance += amount_to_transfer;
+                }
+                else if(strcmp(aux_user.iban3->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban3->currency);
+                    aux_user.iban3->balance += amount_to_transfer;
+                    user->iban3->balance += amount_to_transfer;
+                }
+            }
+
+            else if(strcmp(user_source->iban, aux_user.iban2->iban) == 0){
+                user_source->balance -= amount_to_transfer;
+                aux_user.iban2->balance -= amount_to_transfer;
+                if(strcmp(aux_user.iban1->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban1->currency);
+                    aux_user.iban1->balance += amount_to_transfer;
+                    user->iban1->balance += amount_to_transfer;
+                }
+                else if(strcmp(aux_user.iban3->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban3->currency);
+                    aux_user.iban3->balance += amount_to_transfer;
+                    user->iban3->balance += amount_to_transfer;
+                }
+            }
+            else if(strcmp(user_source->iban, aux_user.iban3->iban) == 0){
+                user_source->balance -= amount_to_transfer;
+                aux_user.iban3->balance -= amount_to_transfer;
+                if(strcmp(aux_user.iban1->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban1->currency);
+                    aux_user.iban1->balance += amount_to_transfer;
+                    user->iban1->balance += amount_to_transfer;
+                }
+                else if(strcmp(aux_user.iban2->iban, iban_destination) == 0){
+                    amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban2->currency);
+                    aux_user.iban2->balance += amount_to_transfer;
+                    user->iban2->balance += amount_to_transfer;
+                }
+            }
         }
-        else if (strcmp(aux_user.iban2->iban, iban_destination) == 0){
-            aux_user.iban2->balance += amount_to_transfer;
-        }
-        else if (strcmp(aux_user.iban3->iban, iban_destination) == 0){
-            aux_user.iban3->balance += amount_to_transfer;
+        
+        else if (strcmp(iban_destination, user->iban1->iban) != 0 &&
+                 strcmp(iban_destination, user->iban2->iban) != 0 &&
+                 strcmp(iban_destination, user->iban3->iban) != 0){
+
+            if (strcmp(aux_user.iban1->iban, user_source->iban) == 0) {
+                aux_user.iban1->balance -= amount_to_transfer;
+                user_source->balance -= amount_to_transfer;
+            } 
+            else if (strcmp(aux_user.iban2->iban, user_source->iban) == 0) {
+                aux_user.iban2->balance -= amount_to_transfer;
+                user_source->balance -= amount_to_transfer;
+            } 
+            else if (strcmp(aux_user.iban3->iban, user_source->iban) == 0) {
+                aux_user.iban3->balance -= amount_to_transfer;
+                user_source->balance -= amount_to_transfer;
+            } 
+            else if (strcmp(aux_user.iban1->iban, iban_destination) == 0){
+                amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban1->currency);
+                aux_user.iban1->balance += amount_to_transfer;
+            }
+            else if (strcmp(aux_user.iban2->iban, iban_destination) == 0){
+                amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban2->currency);
+                aux_user.iban2->balance += amount_to_transfer;
+            }
+            else if (strcmp(aux_user.iban3->iban, iban_destination) == 0){
+                amount_to_transfer = convertCurrency(amount_to_transfer, user_source->currency, aux_user.iban3->currency);
+                aux_user.iban3->balance += amount_to_transfer;
+            }
         }
         
         fprintf(tempFile, CLIENT_FORMAT_CSV_IN,
