@@ -12,14 +12,19 @@ typedef struct{
 } Card_Data;
 
 typedef struct{
-    Card_Data *link;
+    Card_Data *iban1;
+    Card_Data *iban2;
+    Card_Data *iban3;
     char password[20];
     char name[20];
     char surname[20];
     char telephone_number[20];
+    int number_of_cards;
 } User_Credentials;
 
-int main();
+void mainTerminal();
 void clear_screen();
+void mainMenu(User_Credentials user);
+void loggingIntoArgv(char *bufferTelephone, char *bufferPassword);
 void loggingInto(char *bufferTelephone, char *bufferPassword);
 void createAccount();
