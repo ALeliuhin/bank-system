@@ -341,12 +341,18 @@ void mainMenu(User_Credentials user){
                         bool_transfer = false;
                     }while(bool_transfer);
 
+                    if(selected_iban->balance < 5){
+                        clear_screen();
+                        printf("Insufficient funds to perform a transfer.\n");
+                        printf("--------------------------------------------------\n");
+                        break;
+                    }
                     bool_transfer = true;
                     clear_screen();
 
                     do{
                         printf("\n======================================================");
-                        printf("\nInput the destination IBAN:\n");
+                        printf("\nInput the destination IBAN:\n\n");
                         scanf("\n");
                         fgets(iban_destination, IBAN_LENGTH + 1, stdin);
 
@@ -359,7 +365,7 @@ void mainMenu(User_Credentials user){
                             clear_screen();
                             do{
                                 printf("======================================================");
-                                printf("\nInput amount to transfer: (min: 5%s)\n", selected_iban->currency);
+                                printf("\nInput amount to transfer: (min: 5%s)\n\n", selected_iban->currency);
                                 scanf(" %f", &amount_to_transfer);
                                 if(amount_to_transfer > selected_iban->balance){
                                     clear_screen();
